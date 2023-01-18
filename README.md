@@ -10,13 +10,9 @@
 
 # NOTE
 
-- **This tool will not work without decryption keys. Do not bother installing unless you already have keys or can obtain them!**
-- **Downloading courses is against Udemy's Terms of Service, I am NOT held responsible for your account getting suspended as a result from the use of this program!**
-- This program is WIP, the code is provided as-is and I am not held resposible for any legal issues resulting from the use of this program.
-- You can find information on downgrading the CDM version on the wiki, __please note that CDM version 2209 is already revoked as of 12/5/2021 and no longer works on Udemy as of 2/1/2022. This information is just to have it available.__
-  - Chrome: https://github.com/Puyodead1/udemy-downloader/wiki/Downgrade-CDM-to-2209-on-Chrome-(Windows)
-  - FireFox: https://github.com/Puyodead1/udemy-downloader/wiki/Downgrade-CDM-to-2209-on-FireFox-(Windows)
-
+- **This tool will not work on DRM courses without decryption keys!**
+- Downloading courses is against Udemy's Terms of Service, I am not held responsible for your account getting suspended as a result from the use of this program.
+- This program is WIP, the code is provided as-is, and I am not held resposible for any legal issues that may result from the use of this program.
 # Description
 
 Utility script to download Udemy courses, has support for DRM videos but requires the user to aquire the decryption key (for legal reasons).<br>
@@ -42,15 +38,17 @@ You will need to get a few things before you can use this program:
 - Decryption Key ID
 - Decryption Key
 - Udemy Course URL
-- Udemy Bearer Token (aka acccess token for udemy-dl users)
-- Udemy cookies (only required for subscription plans - see [Udemy Subscription Plans](#udemy-subscription-plans))
+- Udemy Bearer Token (aka acccess token for udemy-dl users) or cookies
 
-## Setting up
+## Initial Setup
 
-- rename `.env.sample` to `.env` _(you only need to do this if you plan to use the .env file to store your bearer token)_
-- rename `keyfile.example.json` to `keyfile.json`
+- Rename `.env.sample` to `.env` _(optional, you only need to do this if you plan to use the .env file to store your bearer token)_
+- Rename `keyfile.example.json` to `keyfile.json`
 
 ## Aquire Bearer Token
+
+> **Note**  
+> This option is for users that are not downloading a course included in a subscription plan and need to use a bearer token. You can also choose to use cookies instead.
 
 - Firefox: [Udemy-DL Guide](https://github.com/r0oth3x49/udemy-dl/issues/389#issuecomment-491903900)
 - Chrome: [Udemy-DL Guide](https://github.com/r0oth3x49/udemy-dl/issues/389#issuecomment-492569372)
@@ -58,58 +56,55 @@ You will need to get a few things before you can use this program:
 
 ## Key ID and Key
 
-It is up to you to aquire the key and key ID. Please **DO NOT** ask me for help acquiring these, decrypting DRM protected content can be considered piracy. The tool required for this has already been discused in a GitHub issue.
+It is up to you to aquire the key and key ID.
+
+> **Note**  
+> Please **DO NOT** ask me for help acquiring these, decrypting DRM protected content can be considered piracy.
 
 - Enter the key and key id in the `keyfile.json`
 - ![keyfile example](https://i.imgur.com/e5aU0ng.png)
 - ![example key and kid from console](https://i.imgur.com/awgndZA.png)
 
-## Start Downloading
+## Cookies
+
+To download a course included in a subscription plan that you did not purchase individually, you will need to use cookies. You can also use cookies as an alternative to Bearer Tokens.
+
+The program can automatically extract them from your browser. You can specify what browser to extract cookies from with the `--browser` argument. Supported browsers are:
+
+- chrome
+- firefox
+- opera
+- edge
+- brave
+- chromium
+- vivaldi
+- safari
+
+## Ready to go
 
 You can now run the program, see the examples below. The course will download to `out_dir`.
-
-# Udemy Subscription Plans
-
-To download a course included in a subscription plan that you did not purchase individually, you will need to follow a few more steps to get setup.
-
-_**NOTE**:_ _You do **NOT** need to follow this section if you don't have a **Udemy Pro** or **Udemy Personal** subscription plan! This section is not for individually purchased courses._
-
-## Getting your cookies
-
-- Go to the page of the course you want to download
-- press `control` + `shift` + `i` (this may be different depending on your OS, just google how to open developer tools)
-- click the `Console` tab
-- copy and paste `document.cookie` and press enter
-- copy the text between the quotes
-
-## Setup cookie file
-
-- Create a file called `cookies.txt` in the same folder as `main.py`
-- Paste the cookie into the file
-- save and close the file
-
-You will also need to ensure the link is in the following format: `https://www.udemy.com/course/<course name>/learn/`.
-
-Note the link is `/course` not `/program-taking`. It is also important that the link has `/learn`, otherwise you will see an error when trying to fetch the course information.
 
 # Advanced Usage
 
 ```
-usage: main.py [-h] -c COURSE_URL [-b BEARER_TOKEN] [-q QUALITY] [-l LANG] [-cd CONCURRENT_DOWNLOADS] [--disable-ipv6] [--skip-lectures] [--download-assets] [--download-captions]
-               [--keep-vtt] [--skip-hls] [--info] [--id-as-course-name] [--save-to-file] [--load-from-file] [--log-level LOG_LEVEL] [-v]
+usage: main.py [-h] -c COURSE_URL [-b BEARER_TOKEN] [-q QUALITY] [-l LANG] [-cd CONCURRENT_DOWNLOADS] [--disable-ipv6]
+               [--skip-lectures] [--download-assets] [--download-captions] [--keep-vtt] [--skip-hls] [--info]
+               [--id-as-course-name] [--save-to-file] [--load-from-file] [--log-level LOG_LEVEL]
+               [--browser {chrome,firefox,opera,edge,brave,chromium,vivaldi,safari}] [-v]
 
 Udemy Downloader
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -c COURSE_URL, --course-url COURSE_URL
                         The URL of the course to download
   -b BEARER_TOKEN, --bearer BEARER_TOKEN
                         The Bearer token to use
   -q QUALITY, --quality QUALITY
-                        Download specific video quality. If the requested quality isn't available, the closest quality will be used. If not specified, the best quality will be downloaded
-                        for each lecture
-  -l LANG, --lang LANG  The language to download for captions, specify 'all' to download all captions (Default is 'en')
+                        Download specific video quality. If the requested quality isn't available, the closest quality
+                        will be used. If not specified, the best quality will be downloaded for each lecture
+  -l LANG, --lang LANG  The language to download for captions, specify 'all' to download all captions (Default is
+                        'en')
   -cd CONCURRENT_DOWNLOADS, --concurrent-downloads CONCURRENT_DOWNLOADS
                         The number of maximum concurrent downloads for segments (HLS and DASH, must be a number 1-30)
   --disable-ipv6        If specified, ipv6 will be disabled in aria2
@@ -117,15 +112,20 @@ optional arguments:
   --download-assets     If specified, lecture assets will be downloaded
   --download-captions   If specified, captions will be downloaded
   --keep-vtt            If specified, .vtt files won't be removed
-  --skip-hls            If specified, hls streams will be skipped (faster fetching) (hls streams usually contain 1080p quality for non-drm lectures)
+  --skip-hls            If specified, hls streams will be skipped (faster fetching) (hls streams usually contain 1080p
+                        quality for non-drm lectures)
   --info                If specified, only course information will be printed, nothing will be downloaded
-  --id-as-course-name   If specified, the course id will be used in place of the course name for the output directory. This is a 'hack' to reduce the path length
-  --save-to-file        If specified, course content will be saved to a file that can be loaded later with --load-from-file, this can reduce processing time (Note that asset links expire
-                        after a certain amount of time)
-  --load-from-file      If specified, course content will be loaded from a previously saved file with --save-to-file, this can reduce processing time (Note that asset links expire after a
-                        certain amount of time)
+  --id-as-course-name   If specified, the course id will be used in place of the course name for the output directory.
+                        This is a 'hack' to reduce the path length
+  --save-to-file        If specified, course content will be saved to a file that can be loaded later with --load-
+                        from-file, this can reduce processing time (Note that asset links expire after a certain
+                        amount of time)
+  --load-from-file      If specified, course content will be loaded from a previously saved file with --save-to-file,
+                        this can reduce processing time (Note that asset links expire after a certain amount of time)
   --log-level LOG_LEVEL
                         Logging level: one of DEBUG, INFO, ERROR, WARNING, CRITICAL (Default is INFO)
+  --browser {chrome,firefox,opera,edge,brave,chromium,vivaldi,safari}
+                        The browser to extract cookies from (defaults to chrome)
   -v, --version         show program's version number and exit
 ```
 
@@ -170,6 +170,8 @@ optional arguments:
   - `python main.py -c <Course URL> --log-level CRITICAL`
 - Use course ID as the course name:
   - `python main.py -c <Course URL> --id-as-course-name`
+- Extract cookies from a browser:
+  - `python main.py -c <Course URL> --browser chrome`
 
 If you encounter errors while downloading such as
 
