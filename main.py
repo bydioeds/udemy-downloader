@@ -1,35 +1,38 @@
 import argparse
 import glob
 import json
+import logging
 import os
 import re
 import subprocess
 import sys
 import time
+from html.parser import HTMLParser as compat_HTMLParser
+from pathlib import Path
 from typing import IO
+
 import cloudscraper
 import m3u8
 import requests
-import yt_dlp
 import toml
-import logging
-from constants import *
-from coloredlogs import ColoredFormatter
-from pathlib import Path
-from html.parser import HTMLParser as compat_HTMLParser
-from requests.exceptions import ConnectionError as conn_error
-from tqdm import tqdm
-from utils import extract_kid
-from vtt_to_srt import convert
-from _version import __version__
-from pathvalidate import sanitize_filename
 import undetected_chromedriver as uc
+import yt_dlp
+from coloredlogs import ColoredFormatter
+from pathvalidate import sanitize_filename
+from requests.exceptions import ConnectionError as conn_error
 from selenium.common.exceptions import ElementNotVisibleException
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.support.ui import WebDriverWait
+from tqdm import tqdm
+
+from _version import __version__
+from constants import *
+from tls import SSLCiphers
+from utils import extract_kid
+from vtt_to_srt import convert
 
 retry = 3
 cookies = ""
@@ -1072,6 +1075,12 @@ class Session(object):
     def __init__(self):
         self._headers = HEADERS
         self._session = requests.sessions.Session()
+        self._session.mount(
+            "https://",
+            SSLCiphers(
+                cipher_list="ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:AES256-SH"
+            ),
+        )
 
     def _set_auth_headers(self, bearer_token=""):
         self._headers["Authorization"] = "Bearer {}".format(bearer_token)
