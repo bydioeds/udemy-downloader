@@ -13,9 +13,10 @@
 - **This tool will not work on DRM courses without decryption keys!**
 - Downloading courses is against Udemy's Terms of Service, I am not held responsible for your account getting suspended as a result from the use of this program.
 - This program is WIP, the code is provided as-is, and I am not held resposible for any legal issues that may result from the use of this program.
+
 # Description
 
-Utility script to download Udemy courses, has support for DRM videos but requires the user to aquire the decryption key (for legal reasons).<br>
+Utility script to download Udemy courses, has support for DRM videos but requires the user to acquire the decryption key (for legal reasons).<br>
 Windows is the primary development OS, but I've made an effort to support Linux also (Mac untested).
 
 # Requirements
@@ -45,7 +46,7 @@ You will need to get a few things before you can use this program:
 - Rename `.env.sample` to `.env` _(optional, you only need to do this if you plan to use the .env file to store your bearer token)_
 - Rename `keyfile.example.json` to `keyfile.json`
 
-## Aquire Bearer Token
+## Acquire Bearer Token
 
 > **Note**  
 > This option is for users that are not downloading a course included in a subscription plan and need to use a bearer token. You can also choose to use cookies instead.
@@ -56,7 +57,7 @@ You will need to get a few things before you can use this program:
 
 ## Key ID and Key
 
-It is up to you to aquire the key and key ID.
+It is up to you to acquire the key and key ID.
 
 > **Note**  
 > Please **DO NOT** ask me for help acquiring these, decrypting DRM protected content can be considered piracy.
@@ -87,10 +88,9 @@ You can now run the program, see the examples below. The course will download to
 # Advanced Usage
 
 ```
-usage: main.py [-h] -c COURSE_URL [-b BEARER_TOKEN] [-q QUALITY] [-l LANG] [-cd CONCURRENT_DOWNLOADS] [--disable-ipv6]
-               [--skip-lectures] [--download-assets] [--download-captions] [--keep-vtt] [--skip-hls] [--info]
-               [--id-as-course-name] [--save-to-file] [--load-from-file] [--log-level LOG_LEVEL]
-               [--browser {chrome,firefox,opera,edge,brave,chromium,vivaldi,safari}] [-v]
+usage: main.py [-h] -c COURSE_URL [-b BEARER_TOKEN] [-q QUALITY] [-l LANG] [-cd CONCURRENT_DOWNLOADS] [--disable-ipv6] [--skip-lectures] [--download-assets] [--download-captions] [--keep-vtt] [--skip-hls]
+               [--info] [--id-as-course-name] [--save-to-file] [--load-from-file] [--log-level LOG_LEVEL] [--browser {chrome,firefox,opera,edge,brave,chromium,vivaldi,safari}] [--use-h265]
+               [--h265-crf H265_CRF] [--h265-preset H265_PRESET] [-v]
 
 Udemy Downloader
 
@@ -101,10 +101,8 @@ options:
   -b BEARER_TOKEN, --bearer BEARER_TOKEN
                         The Bearer token to use
   -q QUALITY, --quality QUALITY
-                        Download specific video quality. If the requested quality isn't available, the closest quality
-                        will be used. If not specified, the best quality will be downloaded for each lecture
-  -l LANG, --lang LANG  The language to download for captions, specify 'all' to download all captions (Default is
-                        'en')
+                        Download specific video quality. If the requested quality isn't available, the closest quality will be used. If not specified, the best quality will be downloaded for each lecture
+  -l LANG, --lang LANG  The language to download for captions, specify 'all' to download all captions (Default is 'en')
   -cd CONCURRENT_DOWNLOADS, --concurrent-downloads CONCURRENT_DOWNLOADS
                         The number of maximum concurrent downloads for segments (HLS and DASH, must be a number 1-30)
   --disable-ipv6        If specified, ipv6 will be disabled in aria2
@@ -112,20 +110,21 @@ options:
   --download-assets     If specified, lecture assets will be downloaded
   --download-captions   If specified, captions will be downloaded
   --keep-vtt            If specified, .vtt files won't be removed
-  --skip-hls            If specified, hls streams will be skipped (faster fetching) (hls streams usually contain 1080p
-                        quality for non-drm lectures)
+  --skip-hls            If specified, hls streams will be skipped (faster fetching) (hls streams usually contain 1080p quality for non-drm lectures)
   --info                If specified, only course information will be printed, nothing will be downloaded
-  --id-as-course-name   If specified, the course id will be used in place of the course name for the output directory.
-                        This is a 'hack' to reduce the path length
-  --save-to-file        If specified, course content will be saved to a file that can be loaded later with --load-
-                        from-file, this can reduce processing time (Note that asset links expire after a certain
+  --id-as-course-name   If specified, the course id will be used in place of the course name for the output directory. This is a 'hack' to reduce the path length
+  --save-to-file        If specified, course content will be saved to a file that can be loaded later with --load-from-file, this can reduce processing time (Note that asset links expire after a certain
                         amount of time)
-  --load-from-file      If specified, course content will be loaded from a previously saved file with --save-to-file,
-                        this can reduce processing time (Note that asset links expire after a certain amount of time)
+  --load-from-file      If specified, course content will be loaded from a previously saved file with --save-to-file, this can reduce processing time (Note that asset links expire after a certain amount of
+                        time)
   --log-level LOG_LEVEL
                         Logging level: one of DEBUG, INFO, ERROR, WARNING, CRITICAL (Default is INFO)
   --browser {chrome,firefox,opera,edge,brave,chromium,vivaldi,safari}
-                        The browser to extract cookies from (defaults to chrome)
+                        The browser to extract cookies from
+  --use-h265            If specified, videos will be encoded with the H.265 codec
+  --h265-crf H265_CRF   Set a custom CRF value for H.265 encoding. FFMPEG default is 28
+  --h265-preset H265_PRESET
+                        Set a custom preset value for H.265 encoding. FFMPEG default is medium
   -v, --version         show program's version number and exit
 ```
 
@@ -172,6 +171,12 @@ options:
   - `python main.py -c <Course URL> --id-as-course-name`
 - Extract cookies from a browser:
   - `python main.py -c <Course URL> --browser chrome`
+- Encode in H.265:
+  - `python main.py -c <Course URL> --use-h265`
+- Encode in H.265 with custom CRF:
+  - `python main.py -c <Course URL> --use-h265 -h265-crf 20`
+- Encode in H.265 with custom preset:
+  - `python main.py -c <Course URL> --use-h265 --h265-preset faster`
 
 If you encounter errors while downloading such as
 

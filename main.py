@@ -52,6 +52,9 @@ keys = {}
 id_as_course_name = False
 browser = None
 cj = None
+use_h265 = False
+h265_crf = 28
+h265_preset = "medium"
 
 
 # from https://stackoverflow.com/a/21978778/9785713
@@ -64,7 +67,7 @@ def log_subprocess_output(prefix: str, pipe: IO[bytes]):
 
 # this is the first function that is called, we parse the arguments, setup the logger, and ensure that required directories exist
 def pre_run():
-    global dl_assets, skip_lectures, dl_captions, caption_locale, quality, bearer_token, portal_name, course_name, keep_vtt, skip_hls, concurrent_downloads, disable_ipv6, load_from_file, save_to_file, bearer_token, course_url, info, logger, keys, id_as_course_name, LOG_LEVEL, browser
+    global dl_assets, skip_lectures, dl_captions, caption_locale, quality, bearer_token, portal_name, course_name, keep_vtt, skip_hls, concurrent_downloads, disable_ipv6, load_from_file, save_to_file, bearer_token, course_url, info, logger, keys, id_as_course_name, LOG_LEVEL, browser, use_h265, h265_crf, h265_preset
 
     # make sure the directory exists
     if not os.path.exists(DOWNLOAD_DIR):
@@ -176,6 +179,26 @@ def pre_run():
         help="The browser to extract cookies from",
         choices=["chrome", "firefox", "opera", "edge", "brave", "chromium", "vivaldi", "safari"],
     )
+    parser.add_argument(
+        "--use-h265",
+        dest="use_h265",
+        action="store_true",
+        help="If specified, videos will be encoded with the H.265 codec",
+    )
+    parser.add_argument(
+        "--h265-crf",
+        dest="h265_crf",
+        type=int,
+        default=28,
+        help="Set a custom CRF value for H.265 encoding. FFMPEG default is 28",
+    )
+    parser.add_argument(
+        "--h265-preset",
+        dest="h265_preset",
+        type=str,
+        default="medium",
+        help="Set a custom preset value for H.265 encoding. FFMPEG default is medium",
+    )
     parser.add_argument("-v", "--version", action="version", version="You are running version {version}".format(version=__version__))
 
     args = parser.parse_args()
@@ -214,6 +237,12 @@ def pre_run():
         course_url = args.course_url
     if args.info:
         info = args.info
+    if args.use_h265:
+        use_h265 = True
+    if args.h265_crf:
+        h265_crf = args.h265_crf
+    if args.h265_preset:
+        h265_preset = args.h265_preset
     if args.log_level:
         if args.log_level.upper() == "DEBUG":
             LOG_LEVEL = logging.DEBUG
@@ -282,7 +311,7 @@ class Udemy:
                 sys.exit(1)
 
             logger.warning("No bearer token was provided, attempting to use browser cookies.")
-            
+
             self.session = self.auth._session
 
             if browser == "chrome":
@@ -957,13 +986,23 @@ def mux_process(video_title, video_filepath, audio_filepath, output_path):
     @author Jayapraveen
     """
     if os.name == "nt":
-        command = 'ffmpeg -nostdin -loglevel error -y -i "{}" -i "{}" -acodec copy -vcodec copy -fflags +bitexact -map_metadata -1 -metadata title="{}" "{}"'.format(
-            video_filepath, audio_filepath, video_title, output_path
-        )
+        if use_h265:
+            command = 'ffmpeg -y -i "{}" -i "{}" -c:v libx265 -crf {} -preset {} -c:a copy -fflags +bitexact -map_metadata -1 -metadata title="{}" "{}"'.format(
+                video_filepath, audio_filepath, h265_crf, h265_preset, video_title, output_path
+            )
+        else:
+            command = 'ffmpeg -y -i "{}" -i "{}" -c:v copy -vtag hvc1 -c:a copy -fflags +bitexact -map_metadata -1 -metadata title="{}" "{}"'.format(
+                video_filepath, audio_filepath, video_title, output_path
+            )
     else:
-        command = 'nice -n 7 ffmpeg -nostdin -loglevel error -y -i "{}" -i "{}" -acodec copy -vcodec copy -fflags +bitexact -map_metadata -1 -metadata title="{}" "{}"'.format(
-            video_filepath, audio_filepath, video_title, output_path
-        )
+        if use_h265:
+            command = 'nide -n 7 ffmpeg -y -i "{}" -i "{}" -c:v libx265 -crf {} -preset {} -c:a copy -fflags +bitexact -map_metadata -1 -metadata title="{}" "{}"'.format(
+                video_filepath, audio_filepath, h265_crf, h265_preset, video_title, output_path
+            )
+        else:
+            command = 'nide -n 7 ffmpeg -y -i "{}" -i "{}" -c:v copy -vtag hvc1 -c:a copy -fflags +bitexact -map_metadata -1 -metadata title="{}" "{}"'.format(
+                video_filepath, audio_filepath, video_title, output_path
+            )
 
     process = subprocess.Popen(command, shell=True)
     log_subprocess_output("FFMPEG-STDOUT", process.stdout)
@@ -1287,17 +1326,28 @@ def process_lecture(lecture, lecture_path, lecture_file_name, chapter_dir):
                     source_type = source.get("type")
                     if source_type == "hls":
                         temp_filepath = lecture_path.replace(".mp4", ".%(ext)s")
-                        args = ["yt-dlp", "--force-generic-extractor", "--concurrent-fragments", f"{concurrent_downloads}", "--downloader", "aria2c", "-o", f"{temp_filepath}", f"{url}"]
+                        cmd = ["yt-dlp", "--force-generic-extractor", "--concurrent-fragments", f"{concurrent_downloads}", "--downloader", "aria2c", "-o", f"{temp_filepath}", f"{url}"]
                         if disable_ipv6:
-                            args.append("--downloader-args")
-                            args.append('aria2c:"--disable-ipv6"')
-                        process = subprocess.Popen(args)
+                            cmd.append("--downloader-args")
+                            cmd.append('aria2c:"--disable-ipv6"')
+                        process = subprocess.Popen(cmd)
                         log_subprocess_output("YTDLP-STDOUT", process.stdout)
                         log_subprocess_output("YTDLP-STDERR", process.stderr)
                         ret_code = process.wait()
                         if ret_code == 0:
                             # os.rename(temp_filepath, lecture_path)
                             logger.info("      > HLS Download success")
+                            cmd = ["ffmpeg", "-y", "-i", lecture_path, "-c:v", "libx265", "-c:a", "copy", lecture_path + ".mp4"]
+                            process = subprocess.Popen(cmd)
+                            log_subprocess_output("FFMPEG-STDOUT", process.stdout)
+                            log_subprocess_output("FFMPEG-STDERR", process.stderr)
+                            ret_code = process.wait()
+                            if ret_code == 0:
+                                os.remove(lecture_path)
+                                os.remove(lecture_path + ".mp4", lecture_path)
+                                logger.info("      > Encoding complete")
+                            else:
+                                logger.error("      > Encoding returned non-zero return code")
                     else:
                         ret_code = download_aria(url, chapter_dir, lecture_title + ".mp4")
                         logger.debug(f"      > Download return code: {ret_code}")
@@ -1510,7 +1560,7 @@ def main():
         bearer_token = bearer_token
     else:
         bearer_token = os.getenv("UDEMY_BEARER")
-        
+
     udemy = Udemy(bearer_token)
 
     logger.info("> Fetching course information, this may take a minute...")
