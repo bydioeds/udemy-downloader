@@ -1331,6 +1331,8 @@ def handle_segments(url, format_id, video_title, output_path, lecture_file_name,
     logger.info("> Downloading Lecture Tracks...")
     args = [
         "yt-dlp",
+        "-R", "50",
+        "--retry-sleep", "20",
         "--force-generic-extractor",
         "--allow-unplayable-formats",
         "--concurrent-fragments",
@@ -1358,6 +1360,7 @@ def handle_segments(url, format_id, video_title, output_path, lecture_file_name,
     logger.debug("[-] Return code: " + str(ret_code))
     if ret_code != 0:
         logger.warning("[-] Return code from the downloader was non-0 (error), skipping!")
+        exit(1)
         return
 
     try:
@@ -1385,6 +1388,7 @@ def handle_segments(url, format_id, video_title, output_path, lecture_file_name,
         decrypt(audio_kid, audio_filepath_enc, audio_filepath_dec)
         if ret_code != 0:
             logger.error("> Return code from the decrypter was non-0 (error), skipping!")
+            exit(1)
             return
         logger.info("> Decryption complete")
         logger.info("> Merging video and audio, this might take a minute...")
