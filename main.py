@@ -145,7 +145,7 @@ def create_logger():
 
 
 def pre_run():
-    global cookies, dl_assets, skip_lectures, dl_captions, caption_locale, quality, portal_name, course_name, keep_vtt, skip_hls, concurrent_downloads, disable_ipv6, load_from_file, save_to_file, bearer_token, course_url, info, logger, keys, id_as_course_name, is_subscription_course, log_level, username, password
+    global cookies, remote_url, dl_assets, skip_lectures, dl_captions, caption_locale, quality, portal_name, course_name, keep_vtt, skip_hls, concurrent_downloads, disable_ipv6, load_from_file, save_to_file, bearer_token, course_url, info, logger, keys, id_as_course_name, is_subscription_course, log_level, username, password
 
     # make sure the logs directory exists
     if not os.path.exists(LOG_DIR_PATH):
@@ -292,6 +292,8 @@ def pre_run():
 
     # parse command line arguments, these override the config file settings
     args = parser.parse_args()
+    if args.remote_url:
+        remote_url = args.remote_url
     if args.download_assets:
         dl_assets = True
     if args.lang:
