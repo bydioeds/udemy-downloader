@@ -420,6 +420,7 @@ class Udemy:
         if self.session and self.bearer_token:
             self.session._headers.update({"Authorization": "Bearer {}".format(self.bearer_token)})
             self.session._headers.update({"X-Udemy-Authorization": "Bearer {}".format(self.bearer_token)})
+            print(self.session._headers)
             logger.info("[+] Login Success")
         else:
             logger.fatal("[-] Login Failure! You are probably missing an access token!")
