@@ -27,6 +27,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium import webdriver
 
 from tqdm import tqdm
@@ -382,12 +383,13 @@ def pre_run():
 class Selenium:
     def __init__(self):
         data_dir = os.path.join(os.getcwd(), "selenium_data")
-        options = ChromeOptions()
+        options = FirefoxOptions()
         #options.add_argument("--profile=Selenium")
         #options.add_argument(f"--user-data-dir={data_dir}")
-        options.add_argument("--profile=Selenium")
-        options.add_argument(f"--user-data-dir=/home/pansutodeus/Programación/selenium/selenium_data")
-        
+        #options.add_argument("--profile=Selenium")
+        #options.add_argument(f"--user-data-dir=/home/pansutodeus/Programación/selenium/selenium_data")
+        options.add_argument("-profile")
+        options.add_argument("/home/pansutodeus/.mozilla/firefox/selenium")
         PROXY="127.0.0.1:8080"
         webdriver.DesiredCapabilities.CHROME['proxy'] = {
             "httpProxy": PROXY,
