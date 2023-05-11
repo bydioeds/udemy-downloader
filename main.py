@@ -757,7 +757,7 @@ class Udemy:
             # get the text from the page
             raw_button = selenium.driver.find_element(By.CSS_SELECTOR, "#rawdata-tab")
             
-            driver.execute_script("arguments[0].click();", raw_button);
+            selenium.driver.execute_script("arguments[0].click();", raw_button);
             
             page_text = selenium.driver.find_element(By.CSS_SELECTOR, "pre.data").text
             if not page_text or not isinstance(page_text, str):
