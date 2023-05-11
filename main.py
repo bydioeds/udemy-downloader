@@ -265,7 +265,6 @@ def pre_run():
         "-ru",
         "--remote-url",
         dest="remote_url",
-        action="store_true",
         type=str,
         help="Use remote url",
     )
