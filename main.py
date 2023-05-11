@@ -27,6 +27,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium import webdriver
+
 from tqdm import tqdm
 
 from _version import __version__
@@ -58,6 +60,7 @@ info = None
 keys = {}
 id_as_course_name = False
 is_subscription_course = False
+remote_url = ""
 log_level: str = "INFO"
 stream: logging.StreamHandler = None
 username: str = None
@@ -257,6 +260,15 @@ def pre_run():
         action="store_true",
         help="If this course is part of a subscription plan (Personal or Pro Plans)",
     )
+    
+    parser.add_argument(
+        "-ru",
+        "--remote-url",
+        dest="remote_url",
+        action="store_true",
+        help="Use remote url",
+    )
+
 
     parser.add_argument(
         "--save-to-file",
@@ -369,9 +381,23 @@ class Selenium:
     def __init__(self):
         data_dir = os.path.join(os.getcwd(), "selenium_data")
         options = ChromeOptions()
+        #options.add_argument("--profile=Selenium")
+        #options.add_argument(f"--user-data-dir={data_dir}")
         options.add_argument("--profile=Selenium")
-        options.add_argument(f"--user-data-dir={data_dir}")
-        self._driver = uc.Chrome(options=options, headless=headless)
+        options.add_argument(f"--user-data-dir=/home/pansutodeus/Programación/selenium/selenium_data")
+        
+        PROXY="127.0.0.1:8080"
+        webdriver.DesiredCapabilities.CHROME['proxy'] = {
+            "httpProxy": PROXY,
+            "ftpProxy": PROXY,
+            "sslProxy": PROXY,
+            "proxyType": "MANUAL",
+
+        }
+
+        webdriver.DesiredCapabilities.CHROME['acceptSslCerts']=True
+        #self._driver = uc.Chrome(options=options, headless=headless)
+        self._driver = webdriver.Remote(command_executor=remote_url, desired_capabilities=None, options=options)
         self._driver.get("https://www.udemy.com/")
 
     @property
