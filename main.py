@@ -756,9 +756,11 @@ class Udemy:
             return self._extract_large_course_content_sub(url=url, selenium=selenium)
         else:
             # get the text from the page
-            raw_button = selenium.driver.find_element(By.CSS_SELECTOR, "#rawdata-tab")
-            
-            selenium.driver.execute_script("arguments[0].click();", raw_button);
+            try:
+                raw_button = selenium.driver.find_element(By.CSS_SELECTOR, "#rawdata-tab")
+                selenium.driver.execute_script("arguments[0].click();", raw_button);
+            except:
+                pass
             
             page_text = selenium.driver.find_element(By.CSS_SELECTOR, "pre.data").text
             if not page_text or not isinstance(page_text, str):
