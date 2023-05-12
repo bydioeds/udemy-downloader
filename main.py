@@ -762,7 +762,7 @@ class Udemy:
             except:
                 pass
             
-            page_text = selenium.driver.find_element(By.CSS_SELECTOR, "pre.data").text
+            page_text = selenium.driver.find_element(By.CSS_SELECTOR, "pre").text
             if not page_text or not isinstance(page_text, str):
                 raise Exception("[-] Could not get page pre text!")
             page_json = json.loads(page_text)
