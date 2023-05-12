@@ -824,7 +824,11 @@ class Udemy:
             # wait for page load
             WebDriverWait(selenium.driver, 60).until(EC.visibility_of_element_located((By.TAG_NAME, "body")))
             time.sleep(2)
-
+            try:
+                raw_button = selenium.driver.find_element(By.CSS_SELECTOR, "#rawdata-tab")
+                selenium.driver.execute_script("arguments[0].click();", raw_button);
+            except:
+                pass
             # get the text from the page
             page_text = selenium.driver.find_element(By.TAG_NAME, "pre").text
             if not page_text or not isinstance(page_text, str):
