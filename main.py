@@ -555,6 +555,9 @@ class Udemy:
                     out = self._extract_mpd(src, driver)
                     if out:
                         _temp.extend(out)
+        
+        driver.close()
+
         return _temp
 
     def _extract_subtitles(self, tracks):
@@ -624,8 +627,6 @@ class Udemy:
             
             with open("index.mpd", "w") as f:
                 f.write(info)
-            
-            driver.close()
             
             ytdl = yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True, "allow_unplayable_formats": True, "enable_file_urls": True})
             results = ytdl.extract_info("file://" + os.getcwd() + "/index.mpd", download=False, force_generic_extractor=True)
