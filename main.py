@@ -410,10 +410,12 @@ class Selenium:
 
 
 class Udemy:
-    def __init__(self, bearer_token):
+    def __init__(self, bearer_token, selenium):
         self.session = None
         self.bearer_token = None
         self.auth = UdemyAuth(cache_session=False)
+        self.selenium = selenium
+
         if not self.session:
             self.session, self.bearer_token = self.auth.authenticate(bearer_token=bearer_token)
 
@@ -540,11 +542,6 @@ class Udemy:
 
     def _extract_media_sources(self, sources):
         _temp = []
-        options = FirefoxOptions()
-        options.add_argument("-profile")
-        options.add_argument("/home/pansutodeus/.mozilla/firefox/selenium")
-
-        driver = webdriver.Remote(command_executor=remote_url, desired_capabilities=None, options=options)
 
         if sources and isinstance(sources, list):
             for source in sources:
@@ -552,11 +549,9 @@ class Udemy:
                 src = source.get("src")
 
                 if _type == "application/dash+xml":
-                    out = self._extract_mpd(src, driver)
+                    out = self._extract_mpd(src)
                     if out:
                         _temp.extend(out)
-        
-        driver.close()
 
         return _temp
 
@@ -617,13 +612,13 @@ class Udemy:
             logger.error(f"[-] Udemy Says : '{error}' while fetching hls streams..")
         return _temp
 
-    def _extract_mpd(self, url, driver):
+    def _extract_mpd(self, url):
         """extracts mpd streams"""
         _temp = []
         try:
-            driver.get(url)
-            WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "body")))
-            info = driver.find_element(By.CSS_SELECTOR, "body").text
+            self.selenium.driver.get(url)
+            WebDriverWait(self.selenium.driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "body")))
+            info = self.selenium.driver.find_element(By.CSS_SELECTOR, "body").text
             
             with open("index.mpd", "w") as f:
                 f.write(info)
@@ -1819,10 +1814,10 @@ def main():
 
     if not os.path.isfile(KEY_FILE_PATH):
         logger.warniing("> Keyfile not found! You won't be able to decrypt videos!")
-
-    udemy = Udemy(bearer_token)
     if is_subscription_course:
         selenium = Selenium()
+    udemy = Udemy(bearer_token, selenium)
+    
 
     logger.info("> Fetching course information, this may take a minute...")
     if not load_from_file:
@@ -1850,8 +1845,8 @@ def main():
             course_json = udemy._extract_course_json(course_url, course_id, portal_name)
 
     # close selenium if it's running
-    if selenium:
-        selenium.driver.quit()
+    #if selenium:
+    #    selenium.driver.quit()
 
     if save_to_file:
         with open(os.path.join(os.getcwd(), "saved", "course_content.json"), encoding="utf8", mode="w") as f:
