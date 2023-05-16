@@ -627,7 +627,7 @@ class Udemy:
             driver.close()
             
             ytdl = yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True, "allow_unplayable_formats": True, "enable_file_urls": True})
-            results = ytdl.extract_info("file://" + os.getcwd() + "index.mpd", download=False, force_generic_extractor=True)
+            results = ytdl.extract_info("file://" + os.getcwd() + "/index.mpd", download=False, force_generic_extractor=True)
             seen = set()
             formats = results.get("formats")
 
