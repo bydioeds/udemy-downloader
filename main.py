@@ -540,13 +540,19 @@ class Udemy:
 
     def _extract_media_sources(self, sources):
         _temp = []
+        options = FirefoxOptions()
+        options.add_argument("-profile")
+        options.add_argument("/home/pansutodeus/.mozilla/firefox/selenium")
+
+        driver = webdriver.Remote(command_executor=remote_url, desired_capabilities=None, options=options)
+
         if sources and isinstance(sources, list):
             for source in sources:
                 _type = source.get("type")
                 src = source.get("src")
 
                 if _type == "application/dash+xml":
-                    out = self._extract_mpd(src)
+                    out = self._extract_mpd(src, driver)
                     if out:
                         _temp.extend(out)
         return _temp
@@ -608,16 +614,10 @@ class Udemy:
             logger.error(f"[-] Udemy Says : '{error}' while fetching hls streams..")
         return _temp
 
-    def _extract_mpd(self, url):
+    def _extract_mpd(self, url, driver):
         """extracts mpd streams"""
         _temp = []
         try:
-
-            options = FirefoxOptions()
-            options.add_argument("-profile")
-            options.add_argument("/home/pansutodeus/.mozilla/firefox/selenium")
-
-            driver = webdriver.Remote(command_executor=remote_url, desired_capabilities=None, options=options)
             driver.get(url)
             WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "body")))
             info = driver.find_element(By.CSS_SELECTOR, "body").text
