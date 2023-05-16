@@ -619,6 +619,7 @@ class Udemy:
 
             driver = webdriver.Remote(command_executor=remote_url, desired_capabilities=None, options=options)
             driver.get(url)
+            WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "body")))
             info = driver.find_element(By.CSS_SELECTOR, "body").text
             
             with open("index.mpd", "w") as f:
